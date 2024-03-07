@@ -4,6 +4,9 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import authRoutes from './routes/authRoutes';
 import usuarioRoutes from './routes/usuarioRoutes';
+const express = require('express');
+const { Application } = require('express');
+
 
 
 /*

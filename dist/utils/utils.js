@@ -8,17 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authController = void 0;
-class AuthController {
-    iniciarSesion(req, resp) {
+exports.utils = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+class Utils {
+    hashPassword(password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = req.body;
-            return resp.json({ message: "Autenticación Correcta",
-                email: email,
-                password: password });
+            const salt = yield bcryptjs_1.default.genSaltSync(10);
+            return yield bcryptjs_1.default.hashSync(password, salt);
+        });
+    }
+    checkPassword(password, encryptedPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield bcryptjs_1.default.compareSync(password, encryptedPassword);
         });
     }
 }
-exports.authController = new AuthController();
-//# sourceMappingURL=authControllers.js.map
+exports.utils = new Utils();
+//# sourceMappingURL=utils.js.map

@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
 const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const usuarioRoutes_1 = __importDefault(require("./routes/usuarioRoutes"));
+const express = require('express');
+const { Application } = require('express');
 /*
 *
 *  Karen Linette Cabrera Vidal
@@ -17,7 +18,7 @@ const usuarioRoutes_1 = __importDefault(require("./routes/usuarioRoutes"));
 class Server {
     //Inicializar clase
     constructor() {
-        this.app = (0, express_1.default)();
+        this.app = express();
         this.config();
         this.routes();
         this.app.listen(this.app.get("port"), () => {

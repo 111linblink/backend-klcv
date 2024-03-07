@@ -16,39 +16,95 @@ const connection_1 = __importDefault(require("../config/connection"));
 class UsuarioModelo {
     list() {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield connection_1.default.then((connection) => __awaiter(this, void 0, void 0, function* () {
-                return yield connection.query(" SELECT u.email, u.password, u.role "
-                    + " FROM tbl_usuario u ");
-            }));
-            return result;
+            try {
+                const connection = yield connection_1.default;
+                const result = yield connection.query("SELECT email, password, role FROM tbl_usuario");
+                return result;
+            }
+            catch (error) {
+                throw new Error(`Error al listar usuarios: ${error.message}`);
+            }
         });
     }
     add(usuario) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield connection_1.default.then((connection) => __awaiter(this, void 0, void 0, function* () {
-                return yield connection.query(" INSERT INTO tbl_usuario SET ? ", [usuario]);
-            }));
-            return result;
+            try {
+                // Verificar si el usuario ya existe
+                const existingUser = yield this.getUserByEmail(usuario.email);
+                if (existingUser) {
+                    throw new Error('Ya existe un usuario con este correo electrónico');
+                }
+                const connection = yield connection_1.default;
+                const result = yield connection.query("INSERT INTO tbl_usuario SET ?", [usuario]);
+                return result;
+            }
+            catch (error) {
+                throw new Error(`Error al agregar usuario: ${error.message}`);
+            }
         });
     }
     update(usuario) {
         return __awaiter(this, void 0, void 0, function* () {
-            const update = "UPDATE tbl_usuario SET password='" + usuario.password +
-                "' where email='" + usuario.email + "'";
-            console.log("Update  " + update);
-            const result = yield connection_1.default.then((connection) => __awaiter(this, void 0, void 0, function* () {
-                return yield connection.query(update);
-            }));
-            return result;
+            try {
+                // Verificar si el usuario existe antes de actualizar
+                const existingUser = yield this.getUserByEmail(usuario.email);
+                if (!existingUser) {
+                    throw new Error('El usuario no existe');
+                }
+                const connection = yield connection_1.default;
+                let updateQuery = "UPDATE tbl_usuario SET";
+                const queryParams = [];
+                // Verificar si se proporcionó una nueva contraseña
+                if (usuario.password) {
+                    updateQuery += " password = ?,";
+                    queryParams.push(usuario.password);
+                }
+                // Verificar si se proporcionó un nuevo rol
+                if (usuario.role) {
+                    updateQuery += " role = ?,";
+                    queryParams.push(usuario.role);
+                }
+                // Eliminar la coma final de la consulta de actualización
+                updateQuery = updateQuery.slice(0, -1);
+                // Agregar el condicional WHERE
+                updateQuery += " WHERE email = ?";
+                queryParams.push(usuario.email);
+                // Ejecutar la consulta de actualización
+                const result = yield connection.query(updateQuery, queryParams);
+                return result;
+            }
+            catch (error) {
+                throw new Error(`Error al actualizar usuario: ${error.message}`);
+            }
         });
     }
     delete(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('Eliminando');
-            const result = yield connection_1.default.then((connection) => __awaiter(this, void 0, void 0, function* () {
-                return yield connection.query("DELETE FROM tbl_usuario where email= ?", [email]);
-            }));
-            return result;
+            try {
+                // Verificar si el usuario existe antes de eliminar
+                const existingUser = yield this.getUserByEmail(email);
+                if (!existingUser) {
+                    throw new Error('El usuario no existe');
+                }
+                const connection = yield connection_1.default;
+                const result = yield connection.query("DELETE FROM tbl_usuario WHERE email = ?", [email]);
+                return result;
+            }
+            catch (error) {
+                throw new Error(`Error al eliminar usuario: ${error.message}`);
+            }
+        });
+    }
+    getUserByEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const connection = yield connection_1.default;
+                const result = yield connection.query("SELECT * FROM tbl_usuario WHERE email = ?", [email]);
+                return result[0]; // Retorna el primer resultado si existe, de lo contrario devuelve undefined
+            }
+            catch (error) {
+                throw new Error(`Error al obtener usuario por email: ${error.message}`);
+            }
         });
     }
 }

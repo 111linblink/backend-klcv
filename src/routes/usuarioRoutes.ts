@@ -1,15 +1,15 @@
 import { Router } from "express";
 import { usuarioController } from "../controllers/usuarioController";
 
-class UsuarioRoutes{
-    public router : Router;
+class UsuarioRoutes {
+    public router: Router;
 
-    constructor(){
-        this.router = Router;
+    constructor() {
+        this.router = Router(); // Aquí creas una instancia de Router
         this.config();
     }
 
-    private config(){
+    private config() {
         this.router.get('/', usuarioController.list);
         this.router.post('/', usuarioController.add);
         this.router.put('/', usuarioController.update);
