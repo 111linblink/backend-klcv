@@ -54,22 +54,17 @@ class UsuarioModelo {
                 const connection = yield connection_1.default;
                 let updateQuery = "UPDATE tbl_usuario SET";
                 const queryParams = [];
-                // Verificar si se proporcionó una nueva contraseña
                 if (usuario.password) {
                     updateQuery += " password = ?,";
                     queryParams.push(usuario.password);
                 }
-                // Verificar si se proporcionó un nuevo rol
                 if (usuario.role) {
                     updateQuery += " role = ?,";
                     queryParams.push(usuario.role);
                 }
-                // Eliminar la coma final de la consulta de actualización
                 updateQuery = updateQuery.slice(0, -1);
-                // Agregar el condicional WHERE
                 updateQuery += " WHERE email = ?";
                 queryParams.push(usuario.email);
-                // Ejecutar la consulta de actualización
                 const result = yield connection.query(updateQuery, queryParams);
                 return result;
             }
@@ -81,7 +76,6 @@ class UsuarioModelo {
     delete(email) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Verificar si el usuario existe antes de eliminar
                 const existingUser = yield this.getUserByEmail(email);
                 if (!existingUser) {
                     throw new Error('El usuario no existe');
@@ -100,7 +94,7 @@ class UsuarioModelo {
             try {
                 const connection = yield connection_1.default;
                 const result = yield connection.query("SELECT * FROM tbl_usuario WHERE email = ?", [email]);
-                return result[0]; // Retorna el primer resultado si existe, de lo contrario devuelve undefined
+                return result.length > 0 ? result[0] : null;
             }
             catch (error) {
                 throw new Error(`Error al obtener usuario por email: ${error.message}`);

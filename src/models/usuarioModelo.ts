@@ -40,26 +40,21 @@ class UsuarioModelo {
             let updateQuery = "UPDATE tbl_usuario SET";
             const queryParams = [];
             
-            // Verificar si se proporcionó una nueva contraseña
             if (usuario.password) {
                 updateQuery += " password = ?,";
                 queryParams.push(usuario.password);
             }
     
-            // Verificar si se proporcionó un nuevo rol
             if (usuario.role) {
                 updateQuery += " role = ?,";
                 queryParams.push(usuario.role);
             }
     
-            // Eliminar la coma final de la consulta de actualización
             updateQuery = updateQuery.slice(0, -1);
     
-            // Agregar el condicional WHERE
             updateQuery += " WHERE email = ?";
             queryParams.push(usuario.email);
     
-            // Ejecutar la consulta de actualización
             const result = await connection.query(updateQuery, queryParams);
             return result;
         } catch (error) {
@@ -70,7 +65,6 @@ class UsuarioModelo {
 
     public async delete(email) {
         try {
-            // Verificar si el usuario existe antes de eliminar
             const existingUser = await this.getUserByEmail(email);
             if (!existingUser) {
                 throw new Error('El usuario no existe');
@@ -88,7 +82,7 @@ class UsuarioModelo {
         try {
             const connection = await pool;
             const result = await connection.query("SELECT * FROM tbl_usuario WHERE email = ?", [email]);
-            return result[0]; // Retorna el primer resultado si existe, de lo contrario devuelve undefined
+            return result.length > 0 ? result[0] : null;
         } catch (error) {
             throw new Error(`Error al obtener usuario por email: ${error.message}`);
         }
