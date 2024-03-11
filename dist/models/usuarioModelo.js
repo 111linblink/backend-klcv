@@ -34,6 +34,17 @@ class UsuarioModelo {
                 if (existingUser) {
                     throw new Error('Ya existe un usuario con este correo electrónico');
                 }
+                // Validar que todos los campos requeridos estén presentes y no estén vacíos
+                const requiredFields = ['email', 'password', 'role']; // Agrega aquí los nombres de todos los campos requeridos
+                const emptyFields = [];
+                for (const field of requiredFields) {
+                    if (!usuario[field] || usuario[field].trim() === '') {
+                        emptyFields.push(field);
+                    }
+                }
+                if (emptyFields.length > 0) {
+                    throw new Error(`Todos los campos son requeridos.`);
+                }
                 const connection = yield connection_1.default;
                 const result = yield connection.query("INSERT INTO tbl_usuario SET ?", [usuario]);
                 return result;
