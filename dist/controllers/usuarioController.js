@@ -37,6 +37,17 @@ class UsuarioController {
                 if (!validator_1.default.isEmail(email)) {
                     return res.status(400).json({ message: "Correo electrónico inválido" });
                 }
+                // Validar que todos los campos requeridos estén presentes y no estén vacíos
+                const requiredFields = ['email', 'password', 'role'];
+                const emptyFields = [];
+                for (const field of requiredFields) {
+                    if (!req.body[field] || req.body[field].trim() === '') {
+                        emptyFields.push(field);
+                    }
+                }
+                if (emptyFields.length > 0) {
+                    return res.status(400).json({ message: `Todos los campos son requeridos: ${emptyFields.join(', ')}` });
+                }
                 const existingUser = yield usuarioModelo_1.default.getUserByEmail(email);
                 if (existingUser && existingUser.length > 0) {
                     return res.status(400).json({ message: 'Ya existe un usuario con este email' });
@@ -65,16 +76,12 @@ class UsuarioController {
                 if (password) {
                     encryptedPassword = yield utils_1.utils.hashPassword(password);
                 }
+                // Verificar si todos los campos están llenos
+                if (!encryptedPassword || !role) {
+                    return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+                }
                 // Objeto que contiene los campos a actualizar
-                const updatedFields = { email };
-                // Verificar si se proporcionó una nueva contraseña y actualizarla
-                if (encryptedPassword) {
-                    updatedFields.password = encryptedPassword;
-                }
-                // Verificar si se proporcionó un nuevo rol y actualizarlo
-                if (role) {
-                    updatedFields.role = role;
-                }
+                const updatedFields = { email, password: encryptedPassword, role };
                 // Actualizar el usuario con los campos proporcionados
                 yield usuarioModelo_1.default.update(updatedFields);
                 return res.json({ message: "Usuario actualizado exitosamente", code: 0 });

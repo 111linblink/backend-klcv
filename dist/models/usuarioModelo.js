@@ -35,7 +35,7 @@ class UsuarioModelo {
                     throw new Error('Ya existe un usuario con este correo electrónico');
                 }
                 // Validar que todos los campos requeridos estén presentes y no estén vacíos
-                const requiredFields = ['email', 'password', 'role']; // Agrega aquí los nombres de todos los campos requeridos
+                const requiredFields = ['email', 'password', 'role'];
                 const emptyFields = [];
                 for (const field of requiredFields) {
                     if (!usuario[field] || usuario[field].trim() === '') {
@@ -62,20 +62,13 @@ class UsuarioModelo {
                 if (!existingUser) {
                     throw new Error('El usuario no existe');
                 }
+                // Verificar si todos los campos están llenos
+                if (!usuario.password || !usuario.role) {
+                    throw new Error('Todos los campos son obligatorios');
+                }
                 const connection = yield connection_1.default;
-                let updateQuery = "UPDATE tbl_usuario SET";
-                const queryParams = [];
-                if (usuario.password) {
-                    updateQuery += " password = ?,";
-                    queryParams.push(usuario.password);
-                }
-                if (usuario.role) {
-                    updateQuery += " role = ?,";
-                    queryParams.push(usuario.role);
-                }
-                updateQuery = updateQuery.slice(0, -1);
-                updateQuery += " WHERE email = ?";
-                queryParams.push(usuario.email);
+                let updateQuery = "UPDATE tbl_usuario SET password = ?, role = ? WHERE email = ?";
+                const queryParams = [usuario.password, usuario.role, usuario.email];
                 const result = yield connection.query(updateQuery, queryParams);
                 return result;
             }

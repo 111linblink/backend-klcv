@@ -12,7 +12,7 @@ class UsuarioModelo {
         }
     }
 
-    public async add(usuario) {
+    public async add(usuario: { email: string, password: string, role: string }) {
         try {
             // Verificar si el usuario ya existe
             const existingUser = await this.getUserByEmail(usuario.email);
@@ -21,7 +21,7 @@ class UsuarioModelo {
             }
     
             // Validar que todos los campos requeridos estén presentes y no estén vacíos
-            const requiredFields = ['email', 'password', 'role']; // Agrega aquí los nombres de todos los campos requeridos
+            const requiredFields = ['email', 'password', 'role'];
             const emptyFields = [];
             for (const field of requiredFields) {
                 if (!usuario[field] || usuario[field].trim() === '') {
@@ -49,24 +49,14 @@ class UsuarioModelo {
                 throw new Error('El usuario no existe');
             }
             
+            // Verificar si todos los campos están llenos
+            if (!usuario.password || !usuario.role) {
+                throw new Error('Todos los campos son obligatorios');
+            }
+    
             const connection = await pool;
-            let updateQuery = "UPDATE tbl_usuario SET";
-            const queryParams = [];
-            
-            if (usuario.password) {
-                updateQuery += " password = ?,";
-                queryParams.push(usuario.password);
-            }
-    
-            if (usuario.role) {
-                updateQuery += " role = ?,";
-                queryParams.push(usuario.role);
-            }
-    
-            updateQuery = updateQuery.slice(0, -1);
-    
-            updateQuery += " WHERE email = ?";
-            queryParams.push(usuario.email);
+            let updateQuery = "UPDATE tbl_usuario SET password = ?, role = ? WHERE email = ?";
+            const queryParams = [usuario.password, usuario.role, usuario.email];
     
             const result = await connection.query(updateQuery, queryParams);
             return result;
@@ -74,6 +64,7 @@ class UsuarioModelo {
             throw new Error(`Error al actualizar usuario: ${error.message}`);
         }
     }
+    
     
 
     public async delete(email) {

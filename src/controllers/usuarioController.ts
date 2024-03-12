@@ -19,64 +19,73 @@ class UsuarioController {
 
   public async add(req: Request, res: Response) {
     try {
-      const { email, password, role } = req.body;
+        const { email, password, role } = req.body;
 
-      if (!validator.isEmail(email)) {
-        return res.status(400).json({ message: "Correo electrónico inválido" });
-      }
-      const existingUser = await model.getUserByEmail(email);
-      if (existingUser && existingUser.length > 0) {
-        return res.status(400).json({ message: 'Ya existe un usuario con este email' });
-      }
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({ message: "Correo electrónico inválido" });
+        }
 
-      // Cifrar la contraseña antes de agregar el usuario
-      const encryptedPassword = await utils.hashPassword(password);
+        // Validar que todos los campos requeridos estén presentes y no estén vacíos
+        const requiredFields = ['email', 'password', 'role'];
+        const emptyFields = [];
+        for (const field of requiredFields) {
+            if (!req.body[field] || req.body[field].trim() === '') {
+                emptyFields.push(field);
+            }
+        }
 
-      // Agregar el usuario con la contraseña cifrada
-      await model.add({ email, password: encryptedPassword, role });
+        if (emptyFields.length > 0) {
+            return res.status(400).json({ message: `Todos los campos son requeridos: ${emptyFields.join(', ')}` });
+        }
 
-      return res.json({ message: "Usuario agregado exitosamente", code: 0 });
+        const existingUser = await model.getUserByEmail(email);
+        if (existingUser && existingUser.length > 0) {
+            return res.status(400).json({ message: 'Ya existe un usuario con este email' });
+        }
+
+        // Cifrar la contraseña antes de agregar el usuario
+        const encryptedPassword = await utils.hashPassword(password);
+
+        // Agregar el usuario con la contraseña cifrada
+        await model.add({ email, password: encryptedPassword, role });
+
+        return res.json({ message: "Usuario agregado exitosamente", code: 0 });
     } catch (error: any) {
-      return res.status(500).json({ message: `${error.message}` });
+        return res.status(500).json({ message: `${error.message}` });
     }
-  }
+}
+
 
   public async update(req: Request, res: Response) {
     try {
-      const { email, password, role } = req.body;
-      const existingUser = await model.getUserByEmail(email);
-      if (!existingUser || existingUser.length === 0) {
-        return res.status(404).json({ message: 'El usuario no existe' });
-      }
+        const { email, password, role } = req.body;
+        const existingUser = await model.getUserByEmail(email);
+        if (!existingUser || existingUser.length === 0) {
+            return res.status(404).json({ message: 'El usuario no existe' });
+        }
 
-      // Si se proporciona una nueva contraseña, cifrarla antes de actualizar
-      let encryptedPassword;
-      if (password) {
-        encryptedPassword = await utils.hashPassword(password);
-      }
+        // Si se proporciona una nueva contraseña, cifrarla antes de actualizar
+        let encryptedPassword;
+        if (password) {
+            encryptedPassword = await utils.hashPassword(password);
+        }
 
-      // Objeto que contiene los campos a actualizar
-      const updatedFields: { email: string, password?: string, role?: string } = { email };
+        // Verificar si todos los campos están llenos
+        if (!encryptedPassword || !role) {
+            return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+        }
 
-      // Verificar si se proporcionó una nueva contraseña y actualizarla
-      if (encryptedPassword) {
-        updatedFields.password = encryptedPassword;
-      }
+        // Objeto que contiene los campos a actualizar
+        const updatedFields: { email: string, password: string, role: string } = { email, password: encryptedPassword, role };
 
-      // Verificar si se proporcionó un nuevo rol y actualizarlo
-      if (role) {
-        updatedFields.role = role;
-      }
+        // Actualizar el usuario con los campos proporcionados
+        await model.update(updatedFields);
 
-      // Actualizar el usuario con los campos proporcionados
-      await model.update(updatedFields);
-
-      return res.json({ message: "Usuario actualizado exitosamente", code: 0 });
+        return res.json({ message: "Usuario actualizado exitosamente", code: 0 });
     } catch (error: any) {
-      return res.status(500).json({ message: `${error.message}` });
+        return res.status(500).json({ message: `${error.message}` });
     }
   }
-  
 
   public async delete(req: Request, res: Response) {
     try {
